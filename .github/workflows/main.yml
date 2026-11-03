@@ -1,0 +1,96 @@
+name: The Meow Repo CI (Auto-Fix, Push & Docker Build)
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  full-check-and-build:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    env:
+      UV_PYTHON: "3.12"
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        run: |
+          python -m pip install --upgrade pip
+          pip install uv
+
+      - name: Verify uv
+        run: uv --version
+
+      - name: Generate uv.lock
+        run: |
+          rm -f uv.lock
+          uv lock --prerelease=allow
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Install tools
+        run: uv pip install black isort ruff pip-audit
+
+      - name: Format python files
+        run: |
+          uv run black .
+          uv run isort .
+
+      - name: Ruff auto fix
+        run: |
+          uv run ruff check . --fix --unsafe-fixes --exit-zero
+
+      - name: Dependency audit
+        run: |
+          uv run pip-audit || true
+
+      - name: Direct Commit and Push
+        shell: bash
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          uv lock --prerelease=allow || true
+          
+          STATUS=$(git status --porcelain)
+          if [ -n "$STATUS" ]; then
+            echo "Changes found! Applying auto-fixes..."
+            git add -A
+            git commit -m "chore: auto repo fix (dependency sync, formatting & ruff cleanups)"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          else
+            echo "No changes detected."
+          fi
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag meowmusic:$(date +%s)

@@ -1,0 +1,63 @@
+# Copyright (C) 2026 by Kanha-Team@Github, < https://github.com/Kanha-Team>.
+#
+# This file is part of < https://github.com/Kanha-Team/MeowMusic > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/Kanha-Team/MeowMusic/blob/main/LICENSE >
+#
+# All rights reserved
+
+
+from random import choice
+
+import pyfiglet
+from pyrogram import filters
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
+from MeowMusic import app
+
+
+def figle(text):
+    x = pyfiglet.FigletFont.getFonts()
+    font = choice(x)
+    figled = str(pyfiglet.figlet_format(text, font=font))
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text="ᴄʜᴀɴɢᴇ", callback_data="figlet"),
+                InlineKeyboardButton(text="ᴄʟᴏsᴇ", callback_data="close_reply"),
+            ]
+        ]
+    )
+    return figled, keyboard
+
+
+@app.on_message(filters.command("figlet"))
+async def echo(bot, message):
+    global text
+    try:
+        text = message.text.split(" ", 1)[1]
+    except IndexError:
+        return await message.reply_text("Example:\n\n`/figlet Meow `")
+    kul_text, keyboard = figle(text)
+    await message.reply_text(
+        f"ʜᴇʀᴇ ɪs ʏᴏᴜʀ ғɪɢʟᴇᴛ :\n<pre>{kul_text}</pre>",
+        quote=True,
+        reply_markup=keyboard,
+    )
+
+
+@app.on_callback_query(filters.regex("figlet"))
+async def figlet_handler(Client, query: CallbackQuery):
+    try:
+        kul_text, keyboard = figle(text)
+        await query.message.edit_text(
+            f"ʜᴇʀᴇ ɪs ʏᴏᴜʀ ғɪɢʟᴇᴛ :\n<pre>{kul_text}</pre>", reply_markup=keyboard
+        )
+    except Exception as e:
+        await message.reply(e)
+
+
+__mod_name__ = "Fɪɢʟᴇᴛ"
+__help__ = """
+❍ /figlet*:* ᴍᴀᴋᴇs ғɪɢʟᴇᴛ ᴏғ ᴛʜᴇ ɢɪᴠᴇɴ ᴛᴇxᴛ
+Example:\n\n`/figlet Meow `"""

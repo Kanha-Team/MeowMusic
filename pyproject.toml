@@ -1,0 +1,56 @@
+[project]
+name = "meowmusic"
+version = "3.0.0"
+description = "Telegram voice chat music bot with welcome cards, clones and group tools."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiofiles==25.1.0",
+    "aiohttp==3.14.5",
+    "apscheduler==3.11.3",
+    "beautifulsoup4==4.15.0",
+    "cryptography==50.0.2",
+    "emojis==0.7.0",
+    "future==1.0.0",
+    "gitpython==3.2.1",
+    "gpytranslate==2.1.0",
+    "gtts==2.5.4",
+    "heroku3==5.2.1",
+    "httpx==0.28.1",
+    "img2pdf==0.6.3",
+    "motor==3.7.1",
+    "pillow==13.0.0",
+    "psutil==7.2.2",
+    "py-tgcalls==3.0.0",
+    "ntgcalls==3.0.5",
+    "pycountry==26.2.16",
+    "pydub==0.25.1",
+    "pyfiglet==1.0.4",
+    "pykeyboard==0.1.5",
+    "python-dotenv==1.2.4",
+    "python-telegram-bot==22.8",
+    "python-whois==0.9.6",
+    "py-yt-search==0.8.0",
+    "pyyaml==6.0.3",
+    "qrcode==8.2",
+    "requests==2.34.2",
+    "search-engine-parser==0.6.8",
+    "speechrecognition==3.17.0",
+    "speedtest-cli==2.1.3",
+    "spotipy==2.26.0",
+    "telegraph==2.2.0",
+    "tgcrypto==1.2.5",
+    "unidecode==1.4.0",
+    "wget==3.2",
+    "yt-dlp[default]>=2026.8.19",
+    "youtube-search==2.2.0",
+    "youtube-search-python==1.6.6",
+    "httpx[http2]",
+    "kurigram",
+    "pygithub>=2.4.0",
+    "safoneapi",
+    "six",
+]
+
+[tool.uv]
+package = false

@@ -1,0 +1,113 @@
+# MeowMusic — Project Notice
+
+Copyright (C) 2026 by Kanha-Team@Github, < https://github.com/Kanha-Team>.
+This file is part of < https://github.com/Kanha-Team/MeowMusic > project,
+and is released under the "GNU v3.0 License Agreement".
+Please see < https://github.com/Kanha-Team/MeowMusic/blob/main/LICENSE >
+All rights reserved
+
+---
+
+## 1. About the Project
+
+MeowMusic is a Telegram voice-chat music bot. It is built on Python and
+Pyrogram-based tooling and includes modules for:
+
+- Playing music and videos in Telegram voice and video chats
+- Queue, skip, pause, resume, seek and playback controls
+- Playlist and search support
+- Welcome, leave and group-management tools
+- Admin, approval and bot-management commands
+- Assistant (userbot) account handling for voice-chat playback
+
+The project is intended for personal, educational and community use.
+
+---
+
+## 2. License
+
+This project is distributed under the **GNU General Public License,
+version 3 (GPL-3.0)**. The full license text is in the `LICENSE` file at
+the root of this repository.
+
+You are free to:
+
+- **Use** the software for any purpose.
+- **Study** how it works and change it to suit your needs.
+- **Share** copies of the software.
+- **Share** your modified versions.
+
+Under the following conditions:
+
+- **Source availability:** If you distribute the software, or a modified
+  version of it, you must make the source code available under the same
+  GPL-3.0 terms.
+- **License notice:** You must keep the copyright notices and the
+  license text intact in every copy you distribute.
+- **Change notice:** If you modify a file, you should clearly mark your
+  changes and the date they were made.
+- **No additional restrictions:** You may not add terms that restrict the
+  rights granted by the GPL-3.0.
+
+---
+
+## 3. Why GPL-3.0?
+
+Parts of this project are derived from earlier open-source work. Those
+parts were released under GPL-3.0, and any derived work must remain under
+the same license. Because of this, the project as a whole is distributed
+under GPL-3.0. This notice does not replace the license; it explains how
+it applies.
+
+---
+
+## 4. Third-Party Components
+
+This project depends on third-party libraries (for example Pyrogram,
+py-tgcalls, yt-dlp and Pillow). Each of these is licensed by its own
+authors under its own terms. Please check the license of each dependency
+before using or redistributing this project.
+
+---
+
+## 5. Trademarks and Names
+
+"Telegram" is a trademark of Telegram FZ-LLC. This project is not
+affiliated with or endorsed by Telegram.
+
+"Kanha", "Meow", "MeowMusic" and related names are used to identify this
+project and its derivatives. Use of these names does not imply
+endorsement by their original authors.
+
+---
+
+## 6. Responsible Use
+
+You are responsible for how you use this software. In particular:
+
+- Respect the Telegram Terms of Service and the Bot API rules.
+- Respect the copyright of the music and media you play. Only use
+  content you have the right to stream or share.
+- Do not use this software to harass, spam, or harm others.
+- Follow the laws of your country regarding streaming and copyright.
+
+The authors and contributors provide this software "as is", without any
+warranty, as stated in the GPL-3.0.
+
+---
+
+## 7. Contributing
+
+Contributions are welcome. By submitting a contribution, you agree that it
+will be released under the same GPL-3.0 license as the rest of the project.
+
+---
+
+## 8. Contact
+
+- Support: https://t.me/MeowClone
+- Project: https://github.com/Kanha-Team/MeowMusic
+
+---
+
+Last updated: 2026-10-27

@@ -1,0 +1,25 @@
+# Copyright (C) 2026 by Kanha-Team@Github, < https://github.com/Kanha-Team>.
+#
+# This file is part of < https://github.com/Kanha-Team/MeowMusic > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/Kanha-Team/MeowMusic/blob/main/LICENSE >
+#
+# All rights reserved
+
+
+import sys
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from config import DB_NAME, MONGO_DB_URI
+
+from ..logging import LOGGER
+
+LOGGER(__name__).info("Connecting to your Mongo Database...")
+try:
+    _mongo_async_ = AsyncIOMotorClient(MONGO_DB_URI)
+    mongodb = _mongo_async_[DB_NAME]
+    LOGGER(__name__).info("Connected to your Mongo Database.")
+except:
+    LOGGER(__name__).error("Failed to connect to your Mongo Database.")
+    sys.exit()
