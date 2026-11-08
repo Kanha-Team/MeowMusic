@@ -22,7 +22,7 @@ dependencies = [
     "pillow==13.0.0",
     "psutil==7.2.2",
     "py-tgcalls==3.0.0",
-    "ntgcalls==3.0.5",
+    "ntgcalls==3.0.6",
     "pycountry==26.2.16",
     "pydub==0.25.1",
     "pyfiglet==1.0.4",
