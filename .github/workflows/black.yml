@@ -85,7 +85,11 @@ jobs:
             echo "Changes found! Applying auto-fixes directly to master branch..."
             git add -A
             git commit -m "chore: auto-format code with black, isort and ruff"
+            git pull --rebase origin master || true
             git push origin master
           else
             echo "No formatting changes detected. Code is completely clean!"
           fi
+
+      - name: Build Docker image
+        run: docker build . --file Dockerfile --tag meowmusic:latest
