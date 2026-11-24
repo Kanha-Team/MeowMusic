@@ -3,10 +3,10 @@ name: Code Quality & Auto-Fix (Black, Isort, Ruff)
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -73,7 +73,7 @@ jobs:
           uv run pip-audit || true
 
       - name: Commit and Push formatting fixes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         shell: bash
         run: |
           git config --global user.name "github-actions[bot]"
@@ -82,10 +82,10 @@ jobs:
           uv lock --prerelease=allow || true
           
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Changes found! Applying auto-fixes directly to main branch..."
+            echo "Changes found! Applying auto-fixes directly to master branch..."
             git add -A
             git commit -m "chore: auto-format code with black, isort and ruff"
-            git push origin main
+            git push origin master
           else
             echo "No formatting changes detected. Code is completely clean!"
           fi

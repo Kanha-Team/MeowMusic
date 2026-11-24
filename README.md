@@ -248,7 +248,7 @@ Required config vars: `API_ID`, `API_HASH`, `BOT_TOKEN`, `STRING_SESSION`, `MONG
 | `HEROKU_APP_NAME` | No | — | Heroku app name for update commands |
 | `HEROKU_API_KEY` | No | — | Heroku API key for update commands |
 | `UPSTREAM_REPO` | No | `https://github.com/Kanha-Team/MeowMusic` | Git source for update commands |
-| `UPSTREAM_BRANCH` | No | `main` | Git branch for update commands |
+| `UPSTREAM_BRANCH` | No | `master` | Git branch for update commands |
 | `GIT_TOKEN` | No | — | Git token for private upstream repos |
 
 </details>
@@ -497,7 +497,7 @@ Distributed under the **GNU v3.0 License Agreement**. See the [`LICENSE`](./LICE
 Copyright (C) 2026 by Kanha-Team@Github, < https://github.com/Kanha-Team>.
 This file is part of < https://github.com/Kanha-Team/MeowMusic > project,
 and is released under the "GNU v3.0 License Agreement".
-Please see < https://github.com/Kanha-Team/MeowMusic/blob/main/LICENSE >
+Please see < https://github.com/Kanha-Team/MeowMusic/blob/master/LICENSE >
 All rights reserved
 ```
 

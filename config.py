@@ -2,7 +2,7 @@
 #
 # This file is part of < https://github.com/Kanha-Team/MeowMusic > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/Kanha-Team/MeowMusic/blob/main/LICENSE >
+# Please see < https://github.com/Kanha-Team/MeowMusic/blob/master/LICENSE >
 #
 # All rights reserved
 
@@ -81,7 +81,7 @@ UPSTREAM_REPO = getenv(
     "UPSTREAM_REPO",
     "https://github.com/Kanha-Team/MeowMusic",
 )
-UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "main")
+UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = getenv(
     "GIT_TOKEN", None
 )  # ----------------------------------------------------------------
