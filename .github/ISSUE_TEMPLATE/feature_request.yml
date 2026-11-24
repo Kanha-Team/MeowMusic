@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a new feature or improvement for MeowMusic
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make **MeowMusic** even better? Let us know below!
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A concise summary of the proposed feature.
+      placeholder: e.g. Add Spotify playlist downloader support
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Explain the problem this feature solves and how it should work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or features you've thought about?

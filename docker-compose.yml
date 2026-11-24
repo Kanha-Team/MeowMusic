@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  meowmusic:
+    build: .
+    container_name: meowmusic_bot
+    restart: always
+    command: python3 -m MeowMusic
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - botnet
+
+networks:
+  botnet:
+    driver: bridge

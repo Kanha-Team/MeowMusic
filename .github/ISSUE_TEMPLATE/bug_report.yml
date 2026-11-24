@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a bug in MeowMusic
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue in **MeowMusic**!
+  - type: input
+    id: version
+    attributes:
+      label: MeowMusic Version / Commit
+      description: What version or commit hash are you running?
+      placeholder: e.g. 3.0.0 or main branch
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Describe the steps required to trigger the bug.
+      placeholder: |
+        1. Start the bot with 'bash start'
+        2. Play a song in voice chat using '/play ...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs / Stack Trace
+      description: Paste relevant terminal or logger output here.
+      render: shell
