@@ -476,7 +476,7 @@ class YouTubeAPI:
                 return downloaded_file, True
             return None, False
         except Exception:
-            return (None if (songvideo or songaudio) else (None, False))
+            return None if (songvideo or songaudio) else (None, False)
 
 
 YouTube = YouTubeAPI()
