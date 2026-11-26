@@ -48,9 +48,7 @@ logger = LOGGER(__name__)
 DB = mongodb.chatbotdb
 
 API_URL = os.environ.get("CHATBOT_API_URL", "https://chatbot.riteshyt.in/api/chat")
-API_KEY = os.environ.get(
-    "CHATBOT_API_KEY", "ritesh-8179b3a5da99f300be2d50e1e9789729"
-)
+API_KEY = os.environ.get("CHATBOT_API_KEY", "ritesh-8179b3a5da99f300be2d50e1e9789729")
 CUTE_GIRL_VOICE = os.environ.get("CHATBOT_VOICE", "hi-IN-SwaraNeural")
 TRIGGERS = ["hi", "hello", "hey", "baby", "meow"]
 
@@ -156,9 +154,13 @@ async def voice_toggle(_, message: Message):
         )
     elif arg == "off":
         await DB.update_one(
-            {"chat_id": message.chat.id}, {"$set": {"voice_enabled": False}}, upsert=True
+            {"chat_id": message.chat.id},
+            {"$set": {"voice_enabled": False}},
+            upsert=True,
         )
-        await message.reply_text("📝 Voice Mode is now DISABLED. I will reply with text.")
+        await message.reply_text(
+            "📝 Voice Mode is now DISABLED. I will reply with text."
+        )
     else:
         await message.reply_text("Invalid argument. Use `on` or `off`.")
 
@@ -255,7 +257,7 @@ async def fetch_chat_response(payload: dict) -> dict | None:
                         continue
                     else:
                         break
-            except (aiohttp.ClientError, asyncio.TimeoutError):
+            except (TimeoutError, aiohttp.ClientError):
                 if attempt < max_retries - 1:
                     await asyncio.sleep(2)
                     continue
@@ -345,9 +347,7 @@ async def chatbot_handler(_, message: Message):
             and message.reply_to_message.from_user.is_self
         )
         is_mentioned = (
-            app.me
-            and app.me.username
-            and (f"@{app.me.username.lower()}" in text_lower)
+            app.me and app.me.username and (f"@{app.me.username.lower()}" in text_lower)
         )
 
         if not (is_trigger or is_reply_to_bot or is_mentioned):
