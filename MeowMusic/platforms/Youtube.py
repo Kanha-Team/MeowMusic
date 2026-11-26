@@ -10,6 +10,7 @@
 import asyncio
 import os
 import re
+from urllib.parse import parse_qs, urlparse
 
 import aiohttp
 import yt_dlp
@@ -17,12 +18,11 @@ from py_yt import Playlist, VideosSearch
 from pyrogram.enums import MessageEntityType
 from pyrogram.types import Message
 
-API_URL = os.environ.get("MEOW_API_URL", "https://music.yukiapi.site")
-API_KEY = os.environ.get(
-    "MEOW_API_KEY", "yuki_95a6c913e9b5f9094b013ce8e963a320"
-)  # 🔑 Get Key: @MeowApiRobot On Telegram
+API_URL = "http://201.18.222.133"
+API_KEY = "INFLEX37954428D"
 
 DOWNLOAD_DIR = "downloads"
+_AUDIO_EXTS = ("ogg", "mp3", "m4a", "webm", "opus")
 
 
 def time_to_seconds(time):
@@ -30,36 +30,168 @@ def time_to_seconds(time):
     return sum(int(x) * 60**i for i, x in enumerate(reversed(stringt.split(":"))))
 
 
-async def download_song(link: str) -> str:
-    video_id = link.split("v=")[-1].split("&")[0] if "v=" in link else link
-    if not video_id or len(video_id) < 3:
+def _extract_video_id(link: str) -> str | None:
+    if not link:
+        return None
+    link = link.strip()
+    if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", link):
+        return link
+    parsed = urlparse(link)
+    host = (parsed.netloc or "").lower()
+    path = (parsed.path or "").strip("/")
+    if "youtu.be" in host and path:
+        return path.split("/")[0]
+    if "youtube.com" in host or "youtube-nocookie.com" in host:
+        qs = parse_qs(parsed.query)
+        if qs.get("v"):
+            return qs["v"][0]
+        parts = path.split("/")
+        if len(parts) >= 2 and parts[0] in ("shorts", "live", "embed", "v"):
+            return parts[1]
+    if "v=" in link:
+        return link.split("v=")[-1].split("&")[0]
+    return None
+
+
+def _normalize_yt_url(link: str) -> tuple[str | None, str | None]:
+    video_id = _extract_video_id(link)
+    if not video_id:
+        return None, None
+    return video_id, f"https://www.youtube.com/watch?v={video_id}"
+
+
+async def _request_inflex_media(
+    session: aiohttp.ClientSession,
+    yt_url: str,
+    media_type: str,
+    timeout_sec: int = 30,
+    retries: int = 2,
+) -> dict | None:
+    headers = {"X-API-KEY": API_KEY}
+    payload = {"url": yt_url, "type": media_type}
+    for attempt in range(retries + 1):
+        try:
+            async with session.post(
+                f"{API_URL}/download",
+                json=payload,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=timeout_sec),
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json(content_type=None)
+                    if isinstance(data, dict) and data.get("status") == "success":
+                        return data
+                if resp.status in (401, 403, 404):
+                    return None
+        except Exception:
+            pass
+        if attempt < retries:
+            await asyncio.sleep(0.5)
+    return None
+
+
+async def _download_to_file(
+    session: aiohttp.ClientSession,
+    url: str,
+    dest_path: str,
+    timeout_sec: int,
+    retries: int = 2,
+) -> bool:
+    part_path = f"{dest_path}.part"
+    for attempt in range(retries + 1):
+        try:
+            async with session.get(
+                url, timeout=aiohttp.ClientTimeout(total=timeout_sec)
+            ) as resp:
+                if resp.status in (200, 206):
+                    with open(part_path, "wb") as f:
+                        async for chunk in resp.content.iter_chunked(131072):
+                            f.write(chunk)
+                    if os.path.exists(part_path) and os.path.getsize(part_path) > 1024:
+                        os.replace(part_path, dest_path)
+                        return True
+        except Exception:
+            pass
+        if os.path.exists(part_path):
+            try:
+                os.remove(part_path)
+            except Exception:
+                pass
+        if attempt < retries:
+            await asyncio.sleep(0.5)
+    return False
+
+
+async def _mux_av(video_path: str, audio_path: str, output_path: str) -> bool:
+    tmp_out = f"{output_path}.mux.mp4"
+    for audio_codec in ("copy", "aac"):
+        proc = await asyncio.create_subprocess_exec(
+            "ffmpeg",
+            "-y",
+            "-loglevel",
+            "error",
+            "-i",
+            video_path,
+            "-i",
+            audio_path,
+            "-c:v",
+            "copy",
+            "-c:a",
+            audio_codec,
+            "-movflags",
+            "+faststart",
+            tmp_out,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        await proc.communicate()
+        if (
+            proc.returncode == 0
+            and os.path.exists(tmp_out)
+            and os.path.getsize(tmp_out) > 1024
+        ):
+            os.replace(tmp_out, output_path)
+            return True
+        if os.path.exists(tmp_out):
+            try:
+                os.remove(tmp_out)
+            except Exception:
+                pass
+    return False
+
+
+async def download_song(link: str) -> str | None:
+    video_id, yt_url = _normalize_yt_url(link)
+    if not video_id or not yt_url:
         return None
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
+    for ext in _AUDIO_EXTS:
+        cached = os.path.join(DOWNLOAD_DIR, f"{video_id}.{ext}")
+        if os.path.exists(cached) and os.path.getsize(cached) > 1024:
+            return cached
 
-    if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
-        return file_path
-
+    file_path = None
     try:
         async with aiohttp.ClientSession() as session:
-            stream_url = (
-                f"{API_URL}/stream/{video_id}?key={API_KEY}&type=audio&quality=128"
-            )
-            async with session.get(
-                stream_url, timeout=aiohttp.ClientTimeout(total=300)
-            ) as resp:
-                if resp.status != 200:
-                    return None
-                with open(file_path, "wb") as f:
-                    async for chunk in resp.content.iter_chunked(131072):
-                        f.write(chunk)
+            data = await _request_inflex_media(session, yt_url, "audio", timeout_sec=60)
+            if not data:
+                return None
+            audio_url = data.get("audio_url") or data.get("stream_url")
+            if not audio_url:
+                return None
 
-        if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
-            return file_path
-        return None
+            api_name = data.get("file_name") or ""
+            ext = os.path.splitext(api_name)[1].lstrip(".").lower()
+            if ext not in _AUDIO_EXTS:
+                ext = "ogg"
+            file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{ext}")
+
+            if await _download_to_file(session, audio_url, file_path, timeout_sec=300):
+                return file_path
+            return None
     except Exception:
-        if os.path.exists(file_path):
+        if file_path and os.path.exists(file_path):
             try:
                 os.remove(file_path)
             except Exception:
@@ -67,34 +199,43 @@ async def download_song(link: str) -> str:
         return None
 
 
-async def download_video(link: str) -> str:
-    video_id = link.split("v=")[-1].split("&")[0] if "v=" in link else link
-    if not video_id or len(video_id) < 3:
+async def download_video(link: str) -> str | None:
+    video_id, yt_url = _normalize_yt_url(link)
+    if not video_id or not yt_url:
         return None
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
 
-    if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
+    if os.path.exists(file_path) and os.path.getsize(file_path) > 1024:
         return file_path
 
+    tmp_video = os.path.join(DOWNLOAD_DIR, f"{video_id}.video.tmp")
+    tmp_audio = os.path.join(DOWNLOAD_DIR, f"{video_id}.audio.tmp")
     try:
         async with aiohttp.ClientSession() as session:
-            stream_url = (
-                f"{API_URL}/stream/{video_id}?key={API_KEY}&type=video&quality=480"
-            )
-            async with session.get(
-                stream_url, timeout=aiohttp.ClientTimeout(total=600)
-            ) as resp:
-                if resp.status != 200:
-                    return None
-                with open(file_path, "wb") as f:
-                    async for chunk in resp.content.iter_chunked(131072):
-                        f.write(chunk)
+            data = await _request_inflex_media(session, yt_url, "video", timeout_sec=90)
+            if not data:
+                return None
+            video_url = data.get("video_url") or data.get("stream_url")
+            audio_url = data.get("audio_url")
+            if not video_url:
+                return None
 
-        if os.path.exists(file_path) and os.path.getsize(file_path) > 10000:
-            return file_path
-        return None
+            if audio_url:
+                v_ok, a_ok = await asyncio.gather(
+                    _download_to_file(session, video_url, tmp_video, timeout_sec=600),
+                    _download_to_file(session, audio_url, tmp_audio, timeout_sec=300),
+                )
+                if not v_ok or not a_ok:
+                    return None
+                if await _mux_av(tmp_video, tmp_audio, file_path):
+                    return file_path
+                return None
+
+            if await _download_to_file(session, video_url, file_path, timeout_sec=600):
+                return file_path
+            return None
     except Exception:
         if os.path.exists(file_path):
             try:
@@ -102,6 +243,13 @@ async def download_video(link: str) -> str:
             except Exception:
                 pass
         return None
+    finally:
+        for tmp in (tmp_video, tmp_audio):
+            if os.path.exists(tmp):
+                try:
+                    os.remove(tmp)
+                except Exception:
+                    pass
 
 
 class YouTubeAPI:
@@ -277,6 +425,20 @@ class YouTubeAPI:
         if "&" in link:
             link = link.split("&")[0]
 
+        _vid, yt_url = _normalize_yt_url(link)
+        if yt_url:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    data = await _request_inflex_media(
+                        session, yt_url, "audio", timeout_sec=30
+                    )
+                    if data:
+                        direct_url = data.get("audio_url") or data.get("stream_url")
+                        if direct_url:
+                            return direct_url
+            except Exception:
+                pass
+
         def _extract():
             opts = {"quiet": True, "format": "bestaudio/best", "noplaylist": True}
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -298,10 +460,14 @@ class YouTubeAPI:
         songvideo: bool | str | None = None,
         format_id: bool | str | None = None,
         title: bool | str | None = None,
-    ) -> str:
+    ):
         if videoid:
             link = self.base + link
         try:
+            if songvideo:
+                return await download_video(link)
+            if songaudio:
+                return await download_song(link)
             if video:
                 downloaded_file = await download_video(link)
             else:
@@ -310,7 +476,7 @@ class YouTubeAPI:
                 return downloaded_file, True
             return None, False
         except Exception:
-            return None, False
+            return (None if (songvideo or songaudio) else (None, False))
 
 
 YouTube = YouTubeAPI()
